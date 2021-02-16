@@ -1,7 +1,7 @@
 clear all;close all;clc
 %% Image Classification
-digitDatasetPath = fullfile('D:\OneDrive - University of Warwick\Warwick\1. ENGINEERING\4. YEAR3PROJECT\FRAMES\frames\Pieces\AllAllSamples');
-imds = imageDatastore(digitDatasetPath,'IncludeSubfolders', true, 'LabelSource','foldernames');
+digitDatasetPath = fullfile('D:\OneDrive - University of Warwick\Warwick\1. ENGINEERING\4. YEAR3PROJECT\FRAMES\frames\Pieces\AllAllSamples'); % Folder where frames are located
+imds = imageDatastore(digitDatasetPath,'IncludeSubfolders', true, 'LabelSource','foldernames'); 
 %% Display Class Names and Counts
 tbl = countEachLabel(imds)
 categories = tbl.Label;
@@ -10,7 +10,7 @@ categories = tbl.Label;
 % montage(sample.Files(1:8));
 % title(char(tbl.Label(1)));
 
-%% Partition 300 images for training and 75 for testing
+%% Partition x images for training and y for testing
 image_location = fileparts(imds.Files{1});
 imset = imageSet(strcat(image_location,'\..'),'recursive');
 [tr_set,test_set] = imset.partition(140);
@@ -19,7 +19,7 @@ test_set = test_set.partition(49);
 %% Create Visual Vocabulary
 tic
 bag = bagOfFeatures(tr_set,...
-    'VocabularySize',7,'PointSelection','Detector');
+    'VocabularySize',7,'PointSelection','Detector'); % Change Vocabulary Size here
 scenedata = double(encode(bag, tr_set));
 toc
 return;
