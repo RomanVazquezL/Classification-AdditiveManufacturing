@@ -6,4 +6,5 @@ In the 'main' branch you can find the three main codes that are useful. These ar
 - HowtoReadandCutvideo: This is the file that I use to manipulate (change frame rate, crop, shorten...) the large 55GB and 75GB videos. 
 - IdentifyingFrames: This file shows the code for selecting the desired frames to access, crop and save on my computer, from which I obtained the images for the different samples. 
 - ClassificationBagofWords: This file is the code for classification of the 3 different samples using a BagofWords (explained briefly on Mahara).
+
 Let me know if you need me to send you the videos of the printing process. I can't upload them here because they are too large. 
