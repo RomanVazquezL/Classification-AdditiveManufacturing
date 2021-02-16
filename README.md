@@ -1,5 +1,5 @@
 # AnomalyDetection-AdditiveManufacturing
-Developing ML algorithm for anomaly detection for PBF Additive Manufacturing as final year individual project
+Developing ML algorithm for anomaly detection for PBF Additive Manufacturing as final year individual project.
 
 # Files location and accesing them (for Dmitry Isakov)
 In the 'main' branch you can find the three main codes that are useful. These are subject to change but they should show what I have basically ended up doing and choosing. They are the "final" version of the code so have in mind that a lot more research and other attempts were done to end up with a usable code. The three files are: 
