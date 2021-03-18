@@ -1,81 +1,87 @@
 clear all;close all;clc
-%% Image Classification
-digitDatasetPath = fullfile('D:\OneDrive - University of Warwick\Warwick\1. ENGINEERING\4. YEAR3PROJECT\FRAMES\frames\Pieces\AllAllSamples'); % Folder where frames are located
-imds = imageDatastore(digitDatasetPath,'IncludeSubfolders', true, 'LabelSource','foldernames'); 
-%% Display Class Names and Counts
-tbl = countEachLabel(imds)
-categories = tbl.Label;
-%% Display Sampling of Image Data
-% sample = splitEachLabel(imds, 8);
-% montage(sample.Files(1:8));
-% title(char(tbl.Label(1)));
+%% Establish datasets using ImageDataStore function
+File = fullfile('C:\Training and Test Set');
+DB = imageDatastore(File,'IncludeSubfolders', true, 'LabelSource','foldernames');
+%% Display class names and counts
+Table = countEachLabel(DB)
+Categories = tbl.Label;
 
-%% Partition x images for training and y for testing
-image_location = fileparts(imds.Files{1});
-imset = imageSet(strcat(image_location,'\..'),'recursive');
-[tr_set,test_set] = imset.partition(140);
-test_set = test_set.partition(49);
+%% Partition 336 images for training and 228 for testing
+Ilocation = fileparts(DB.Files{1});
+imgSet = imageSet(strcat(Ilocation,'\..'),'recursive'); % Recursively scan entire image set folder
+[training_set,test_set] = imgSet.partition(113); % Create training and test set
+test_set = test_set.partition(76);
 
 %% Create Visual Vocabulary
-tic
-bag = bagOfFeatures(tr_set,...
-    'VocabularySize',7,'PointSelection','Detector'); % Change Vocabulary Size here
-scenedata = double(encode(bag, tr_set));
-toc
-return;
-%% Visualize Feature Vectors 
-img = read(tr_set(1), randi(tr_set(1).Count));
-featureVector = encode(bag, img);
+tic % Start timer
+% Use bagOfFeatures function to create vocabulary
+% Set vocabulary size, type of feature point selection 
+% and amount of features to select from (Final was 7, grid, 80%)
+BoVW = bagOfFeatures(training_set, 'VocabularySize',7,'PointSelection','Grid','StrongestFeatures', 0.8);
+% Create array of presence of visual words on each image
+imgdata = double(encode(BoVW, tr_set)); 
+toc % Stop timer
+return; % Stop running code
+%% Visualise/Plot histograms of feature vectors
 
-subplot(3,2,1); imshow(img);
-subplot(3,2,2); 
-bar(featureVector);title('Visual Word Occurrences');xlabel('Visual Word Index');ylabel('Frequency');
+% Plot histogram of random S1 image
+img = read(training_set(1), randi(training_set(1).Count));
+featureVector = encode(BoVW, img); % Encode data from BoVW
+subplot(1,3,1); % Establish 1x3 image
+bS1 = bar(featureVector, 'FaceColor', [0 0.7 0]);
+titS1 = title({'Visual Word Occurrences of','Image in S1 Training Set'});
+xlabS1 = xlabel('Visual Word Index');
+ylabS1 = ylabel('Frequency ()');
 
+% Set font and size
+set(gca, 'FontName', 'Times New Roman')
+set([xlabS1,ylabS1], 'FontSize', 13)
+set([titS1], 'FontSize', 15)
+
+% Plot histogram of random S2 image
 img = read(tr_set(2), randi(tr_set(2).Count));
-featureVector = encode(bag, img);
-subplot(3,2,3); imshow(img);
-subplot(3,2,4); 
-bar(featureVector);title('Visual Word Occurrences');xlabel('Visual Word Index');ylabel('Frequency');
+featureVector = encode(BoVW, img);
+subplot(1,3,2); 
+bS2 = bar(featureVector, 'FaceColor', [0 0.5 0]);
+titS2 = title({'Visual Word Occurrences of','Image in S2 Training Set'});
+xlabS2 = xlabel('Visual Word Index');
+ylabS2 = ylabel('Frequency (%)');
 
+% Set font and size
+set(gca, 'FontName', 'Times New Roman')
+set([xlabS2,ylabS2], 'FontSize', 13)
+set([titS2], 'FontSize', 15)
+
+% Plot histogram of random S3 image
 img = read(tr_set(3), randi(tr_set(3).Count));
-featureVector = encode(bag, img);
-subplot(3,2,5); imshow(img);
-subplot(3,2,6); 
-bar(featureVector);title('Visual Word Occurrences');xlabel('Visual Word Index');ylabel('Frequency');
+featureVector = encode(BoVW, img);
+subplot(1,3,3); 
+bS3 = bar(featureVector, 'FaceColor', [0 0.3 0]);
+titS3 = title({'Visual Word Occurrences of','Image in S3 Training Set'});
+xlabS3 = xlabel('Visual Word Index');
+ylabS3 = ylabel('Frequency (%)');
 
-%% Create a Table using the encoded features
-SceneImageData = array2table(scenedata);
-sceneType = categorical(repelem({tr_set.Description}', [tr_set.Count], 1));
-SceneImageData.sceneType = sceneType;
-%% Use the new features to train a model and assess its performance using 
+% Set font and size
+set(gca, 'FontName', 'Times New Roman')
+set([xlabS3,ylabS3], 'FontSize', 13)
+set([titS3], 'FontSize', 15)
+%% Create a 339x8 table using the encoded features
+ImageData = array2table(imgdata); % Convert array created earlier to table
+% Link each category with each feature vector
+Type = categorical(repelem({training_set.Description}', [training_set.Count], 1)); 
+ImageData.Type = Type;
+%% Use the Image Data to train a model and assess its performance using Classification learner
+% Open Classification Learner and import trained model
 classificationLearner
-%% Test out accuracy on test set!
+%% Test out accuracy on testing set
+tic % Start timer
+testImData = double(encode(BoVW, test_set));
+testImData = array2table(testImData,'VariableNames',M0780.RequiredVariables); % Implement imported model
+actualImType = categorical(repelem({test_set.Description}', [test_set.Count], 1)); % Obtain actual category
 
-testSceneData = double(encode(bag, test_set));
-testSceneData = array2table(testSceneData,'VariableNames',trainedModel12.RequiredVariables);
-actualSceneType = categorical(repelem({test_set.Description}', [test_set.Count], 1));
+predictedOutcome = M0780.predictFcn(testImData); % Implement imported model M0780 to test
 
-predictedOutcome = trainedModel12.predictFcn(testSceneData);
-
-correctPredictions = (predictedOutcome == actualSceneType);
-validationAccuracy = sum(correctPredictions)/length(predictedOutcome) 
-
-%% Visualize how the classifier works
-ii = randi(size(test_set,2));
-jj = randi(test_set(ii).Count);
-img = read(test_set(ii),jj);
-
-imshow(img)
-% Add code here to invoke the trained classifier
-imagefeatures = double(encode(bag, img));
-% Find two closest matches for each feature
-[bestGuess, score] = predict(trainedModel4.ClassificationSVM,imagefeatures);
-% Display the string label for img
-if strcmp(char(bestGuess),test_set(ii).Description)
-	titleColor = [0 0.8 0];
-else
-	titleColor = 'r';
-end
-title(sprintf('Best Guess: %s; Actual: %s',...
-	char(bestGuess),test_set(ii).Description),...
-	'color',titleColor)
+% Count correct predictions by comparing obtained classification and actual category
+correctPredictions = (predictedOutcome == actualImType); 
+validationAccuracy = sum(correctPredictions)/length(predictedOutcome) % Calculate validation accuracy
+toc % Stop timer
